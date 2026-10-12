@@ -24,7 +24,7 @@ python -m http.server 4173 --directory dist
 测试需要 Node.js 18+：
 
 ```powershell
-node --test tests/*.test.mjs
+node --test tests/logic.test.mjs tests/static.test.mjs
 node --check dist/app.js
 node --check dist/logic.js
 node --check dist/data.js
