@@ -28,7 +28,7 @@
 | 保存 | 通过 | 策略和条件保存到浏览器 Local Storage，可重新载入 |
 | 回测 | 通过 | 12 月等权研究原型；缺历史序列时拒绝生成结果；显示方法限制 |
 | 转监控任务 | 通过（原型） | 保存频率、条件和提醒触发器；明确生产版需要服务端调度器 |
-| 可操作 Web 产品 URL | 通过（部署配置） | `.github/workflows/pages.yml` 将 `dist/` 自动部署到 GitHub Pages |
+| 可操作 Web 产品 URL | 待仓库设置启用 | `.github/workflows/pages.yml` 已配置；首次运行因 Private 仓库尚未启用 Pages 而失败，需在 Settings → Pages 选择 GitHub Actions 后重跑 |
 | 源代码仓库与 README | 通过（待本次上传） | README 含启动、环境变量、产品选择、AI 角色、数据来源、边界及未做事项 |
 | AI 使用与验证记录 | 通过 | `AI_USAGE.md` 记录工具、参与范围和人工修正 |
 | 测试说明 | 通过 | `TESTING.md`；自动化覆盖主链路、缺失、接口异常、极端冲突、过期与合规 |
@@ -46,8 +46,9 @@
 
 ## 发布后核对
 
-1. GitHub Actions 的 `Deploy GitHub Pages` 工作流成功。
-2. 访问 `https://nochaosinlife.github.io/zhice-a-share-screener/`。
-3. 用真实扶摇 Key 或标准化 JSON 完成一次真实数据验收。
-4. 确认仓库未包含 API Key、`.env`、`work/` 或 `outputs/`。
+1. 在 Settings → Pages 把 Source 设为 GitHub Actions；Private 仓库还需确认当前账号方案支持 Pages。
+2. 重新运行 `Deploy GitHub Pages`，确认工作流成功。
+3. 访问 `https://nochaosinlife.github.io/zhice-a-share-screener/`。
+4. 用真实扶摇 Key 或标准化 JSON 完成一次真实数据验收。
+5. 确认仓库未包含 API Key、`.env`、`work/` 或 `outputs/`。
 
