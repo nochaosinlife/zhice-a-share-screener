@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="知策：把自然语言选股意图转成可检查、可修改、可执行的数据条件。" />
+  <title>知策 · 自然语言智能选股</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="知策首页">
+        <span class="brand-mark">知</span>
+        <span><strong>知策</strong><small>Strategy Lens</small></span>
+      </a>
+      <nav class="topnav" aria-label="主导航">
+        <a href="#builder">策略构建</a><a href="#results">筛选结果</a><button class="nav-link" data-open="methodology">方法与边界</button>
+      </nav>
+      <div class="top-actions">
+        <button class="data-pill" id="dataStatus" data-open="data"><span></span>审计演示数据</button>
+        <button class="icon-btn" id="savedBtn" data-open="saved" aria-label="已保存策略">☆</button>
+        <button class="avatar" aria-label="用户">研</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="eyebrow">RESEARCH WORKBENCH · A-SHARE</div>
+        <h1>把投资想法，变成<br><em>经得起追问</em>的条件。</h1>
+        <p>AI 负责理解与澄清，规则引擎负责计算。每一个结果都能回到字段、时点与口径。</p>
+        <div class="trust-row"><span>✓ 不做涨跌预测</span><span>✓ 不给买卖建议</span><span>✓ 缺失数据不静默补零</span></div>
+      </section>
+
+      <section class="builder" id="builder">
+        <div class="step-label"><b>01</b><span>描述你的选股想法</span><i></i></div>
+        <div class="prompt-card">
+          <label for="intentInput">你想找什么样的公司？</label>
+          <textarea id="intentInput" rows="3">经营改善、估值合理、走势相对稳定的沪深300公司</textarea>
+          <div class="prompt-footer">
+            <div class="examples"><span>试试：</span><button>高ROE、低估值，波动率低于2%</button><button>营收增速高于15%，PE低于25</button></div>
+            <button class="primary" id="parseBtn"><span>解析意图</span><b>→</b></button>
+          </div>
+        </div>
+
+        <div class="ai-boundary">
+          <span class="ai-icon">✦</span>
+          <div><strong>AI 只做语义转换</strong><p>不会直接决定股票入选。解析结果需经你确认，再由确定性引擎逐条执行。</p></div>
+          <button data-open="methodology">查看职责边界</button>
+        </div>
+
+        <div class="step-label"><b>02</b><span>确认可执行条件</span><i></i><small id="parseTime">等待解析</small></div>
+        <div id="conflictBox"></div>
+        <div class="clarify-card" id="clarifyCard">
+          <div class="clarify-head"><span>✦ AI 发现 3 个模糊表达</span><small>请确认口径</small></div>
+          <div id="clarifications"></div>
+        </div>
+
+        <div class="condition-layout">
+          <aside class="universe-card">
+            <span class="card-kicker">股票池</span>
+            <h3>沪深 300</h3>
+            <p>当前演示样本 12 只</p>
+            <dl><div><dt>地域</dt><dd>中国 A 股</dd></div><div><dt>标的类型</dt><dd>普通股票</dd></div><div><dt>缺失策略</dt><dd><select id="missingPolicy"><option value="strict">严格排除</option><option value="lenient">保留并降分</option></select></dd></div></dl>
+            <button class="text-btn" data-open="data">更换数据 / 股票池 →</button>
+          </aside>
+          <div class="conditions-panel">
+            <div class="panel-head"><div><strong>筛选条件</strong><span id="activeCount">6 条已启用</span></div><button id="resetBtn">重置</button></div>
+            <div id="conditions"></div>
+          </div>
+        </div>
+
+        <div class="impact-bar" id="impactBar"><span>◇</span><p><strong>条件影响预览</strong><b id="impactText">当前条件将从 12 只样本中筛出候选</b></p><button id="runBtn">运行筛选 <b>→</b></button></div>
+      </section>
+
+      <section class="results" id="results">
+        <div class="results-head">
+          <div><div class="step-label light"><b>03</b><span>查看可解释结果</span></div><h2>候选清单</h2><p id="resultMeta">确定性规则逐条计算 · 结果可追溯</p></div>
+          <div class="result-actions"><button id="saveBtn">♡ 保存策略</button><button id="backtestBtn">◫ 快速回测</button><button id="monitorBtn" class="accent">◉ 转为监控</button></div>
+        </div>
+        <div class="data-warning"><span>!</span><p><strong id="dataLabel">审计演示快照 · 构造数据</strong><small id="dataNote">默认值不代表真实行情；可导入扶摇数据后重算。</small></p><button data-open="data">接入真实数据</button></div>
+        <div class="stats" id="stats"></div>
+        <div class="tabs" role="tablist"><button class="active" data-tab="included">入选 <b id="inCount">0</b></button><button data-tab="excluded">排除 <b id="outCount">0</b></button><button data-tab="all">全部 <b id="allCount">12</b></button><span></span><label>排序 <select id="sortSelect"><option value="score">匹配度</option><option value="pe">PE 由低到高</option><option value="vol">波动率由低到高</option></select></label></div>
+        <div class="result-grid" id="resultGrid"></div>
+        <div class="empty-state" id="emptyState" hidden><span>◇</span><h3>没有股票满足全部条件</h3><p>尝试放宽红色条件，影响预览会即时告诉你新增了哪些候选。</p></div>
+      </section>
+    </main>
+
+    <footer><div class="brand compact"><span class="brand-mark">知</span><strong>知策</strong></div><p>研究辅助工具，不构成投资建议。历史表现不代表未来收益。</p><div><button data-open="methodology">方法说明</button><button data-open="record">AI 使用与验证记录</button></div></footer>
+  </div>
+
+  <div class="compare-bar" id="compareBar" hidden><span>已选 <b id="compareCount">0</b>/3</span><div id="compareChips"></div><button id="compareNow">开始比较 →</button></div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="modal-backdrop" id="backdrop" hidden></div>
+  <dialog id="modal"><button class="modal-close" aria-label="关闭">×</button><div id="modalBody"></div></dialog>
+
+  <template id="stockTemplate">
+    <article class="stock-card">
+      <div class="stock-top"><label class="compare-check"><input type="checkbox" /><span>对比</span></label><span class="status-badge"></span></div>
+      <button class="stock-title"><span class="stock-logo"></span><span><strong></strong><small></small></span><b></b></button>
+      <div class="score-line"><span>条件匹配度</span><div><i></i></div><strong></strong></div>
+      <div class="metrics"></div>
+      <div class="reason"></div>
+      <button class="trace-btn">查看逐条依据与原始字段 <span>→</span></button>
+    </article>
+  </template>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
+

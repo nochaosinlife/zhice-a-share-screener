@@ -1,0 +1,11 @@
+{
+  "name": "zhice-a-share-screener",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/logic.test.mjs tests/static.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/logic.js && node --check dist/data.js"
+  }
+}
+
