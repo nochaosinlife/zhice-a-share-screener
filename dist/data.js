@@ -1,7 +1,7 @@
 export const DATA_META = {
   mode: "demo",
   label: "审计演示快照 · 构造数据",
-  asOf: "2026-10-09 15:00 CST",
+  asOf: "2026-10-09T07:00:00.000Z",
   reportPeriod: "2026Q2 / TTM",
   note: "默认数据仅用于验证产品流程，不代表真实行情。导入扶摇标准化数据后，所有结论将自动重算。",
 };
@@ -32,13 +32,12 @@ export const STOCKS = raw.map(([code,name,industry,close,revenue_yoy,revenue_acc
     revenue_yoy: src("/api/a-share/financials/indicators", "operating_revenue_growth_ratio", "%", DATA_META.reportPeriod),
     revenue_accel: src("派生计算", "revenue_yoy(t)-revenue_yoy(t-1)", "百分点", DATA_META.reportPeriod),
     roe: src("/api/a-share/financials/indicators", "weighted_roe", "%", DATA_META.reportPeriod),
-    pe_ttm: src("/api/a-share/valuation/snapshot", "pe_ttm", "倍"),
-    pb_mrq: src("/api/a-share/valuation/snapshot", "pb_mrq", "倍"),
-    volatility_20d: src("派生计算", "std(daily_return,20)*sqrt(250)", "%", DATA_META.asOf),
-    drawdown_60d: src("派生计算", "close/max(close,60)-1", "%", DATA_META.asOf),
+    pe_ttm: src("/api/a-share/valuations/snapshot", "pe_ttm", "倍"),
+    pb_mrq: src("/api/a-share/valuations/snapshot", "pb_mrq", "倍"),
+    volatility_20d: src("派生计算", "std(daily_return,20)，非年化", "%", DATA_META.asOf),
+    drawdown_60d: src("派生计算", "min(close/rolling_peak-1,60)", "%", DATA_META.asOf),
     turnover_20d: src("/api/a-share/prices/history", "avg(turnover,20)", "亿元", DATA_META.asOf),
   },
 }));
 
 export const BENCHMARK_RETURNS = [0.7,-0.4,1.5,1.1,0.6,-0.3,1.2,0.5,-0.8,1.4,0.4,0.9];
-

@@ -3,7 +3,8 @@ node_modules/
 *.log
 .env
 .env.*
+!.env.example
 work/
 outputs/
 site-bundle.tar.gz
-
+site-dist/

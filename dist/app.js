@@ -11,7 +11,7 @@ const initial = parseIntent($("#intentInput").value);
 const state = {
   stocks: copy(STOCKS), dataMeta: copy(DATA_META), intent: initial,
   conditions: copy(initial.conditions), results: [], preview: [], tab: "included", sort: "score",
-  compare: new Set(), strictMissing: true,
+  compare: new Set(), strictMissing: true, benchmarkReturns: copy(BENCHMARK_RETURNS), serverStatus: "checking",
 };
 
 function toast(message) {
@@ -84,6 +84,7 @@ function renderResults() {
   $("#dataNote").textContent = freshness.status === "fresh" ? state.dataMeta.note : `${state.dataMeta.note}；${freshness.message}，请刷新或导入新快照。`;
   const dataStatus = $("#dataStatus"); dataStatus.lastChild.textContent = state.dataMeta.mode === "live" ? " 已导入真实数据" : state.dataMeta.mode === "mixed" ? " 混合数据" : " 审计演示数据";
   dataStatus.classList.toggle("live", state.dataMeta.mode === "live");
+  $("#universeSummary").textContent = state.dataMeta.universe || `${state.dataMeta.mode === "live" ? "真实" : "演示"}样本 ${state.stocks.length} 只`;
   $("#stats").innerHTML = `<div class="stat"><small>样本总数</small><strong>${state.results.length}</strong></div><div class="stat"><small>满足全部条件</small><strong class="green">${included.length}</strong></div><div class="stat"><small>因条件排除</small><strong>${excluded.length}</strong></div><div class="stat"><small>含缺失字段</small><strong>${missing}</strong></div>`;
 
   let shown = state.tab === "included" ? included : state.tab === "excluded" ? excluded : [...state.results];
@@ -130,7 +131,7 @@ function closeModal() { const modal = $("#modal"); if (modal.open) modal.close()
 function openStock(stock) {
   const rows = stock.checks.filter((c) => c.status !== "disabled").map((c) => {
     const source = stock.sources?.[c.key] || { provider: state.dataMeta.mode === "live" ? "导入数据" : "未提供", endpoint: "—", field: c.key, unit: c.def.unit, asOf: state.dataMeta.asOf };
-    return `<tr><td>${esc(c.def.label)}</td><td>${c.actual == null ? "—" : `${fmt(c.actual)} ${esc(c.def.unit)}`}</td><td>${esc(c.def.op)} ${c.expected} ${esc(c.def.unit)}</td><td class="${c.status}">${c.status === "pass" ? "通过" : c.status === "fail" ? "未通过" : "缺失"}<span class="source-note">${esc(source.provider)} · ${esc(source.endpoint)}<br>${esc(source.field)} · ${esc(source.asOf)} · ${esc(source.unit)}</span></td></tr>`;
+    return `<tr><td>${esc(c.def.label)}</td><td>${c.actual == null ? "—" : `${fmt(c.actual)} ${esc(c.def.unit)}`}</td><td>${esc(c.def.op)} ${c.expected} ${esc(c.def.unit)}</td><td class="${c.status}">${c.status === "pass" ? "通过" : c.status === "fail" ? "未通过" : "缺失"}<span class="source-note">${esc(source.provider)} · ${esc(source.endpoint)}<br>${esc(source.field)} · ${esc(source.asOf)} · ${esc(source.unit)}${source.requestId ? `<br>request_id: ${esc(source.requestId)}` : ""}</span></td></tr>`;
   }).join("");
   showModal(`<div class="modal-content"><span class="card-kicker">DECISION TRACE</span><h2>${esc(stock.name)} <small>${esc(stock.code)}</small></h2><p class="lead">${esc(cardReason(stock))}</p><table class="trace-table"><thead><tr><th>条件</th><th>原始值</th><th>阈值</th><th>结论与来源</th></tr></thead><tbody>${rows}</tbody></table><div class="modal-section"><h3>事实、推断与边界</h3><p><b>事实：</b>表中的原始字段与时点。<br><b>推断：</b>确定性比较运算产生的“通过/排除”。<br><b>边界：</b>入选仅表示满足当前条件，不代表未来上涨或适合买入。</p></div></div>`);
 }
@@ -142,11 +143,11 @@ function openCompare() {
 }
 
 function openBacktest() {
-  const selected = state.results.filter((s) => s.included && Array.isArray(s.returns)); const report = backtest(selected, BENCHMARK_RETURNS);
+  const selected = state.results.filter((s) => s.included && Array.isArray(s.returns) && s.returns.length); const report = state.benchmarkReturns.length ? backtest(selected, state.benchmarkReturns) : null;
   if (!report) return showModal(`<div class="modal-content"><h2>无法运行回测</h2><p class="lead">当前没有同时具备入选状态和历史月收益序列的股票。缺失时不会生成虚假结果。</p></div>`);
   const max = Math.max(...report.portfolio.map(Math.abs), ...report.benchmark.map(Math.abs), 1);
   const bars = report.portfolio.map((v, i) => `<div class="bar-pair" title="第${i + 1}月：组合${fmt(v)}%，基准${fmt(report.benchmark[i])}%"><i style="height:${Math.max(2, Math.abs(v) / max * 100)}%"></i><i style="height:${Math.max(2, Math.abs(report.benchmark[i]) / max * 100)}%"></i></div>`).join("");
-  showModal(`<div class="modal-content"><span class="card-kicker">RESEARCH SIMULATION</span><h2>12 个月等权回测</h2><p class="lead">每月末等权、未计交易成本。演示数据的收益序列为构造数据；导入真实历史收益后才具有研究意义。</p><div class="backtest-stats"><div><small>组合累计</small><strong>${fmt(report.total)}%</strong></div><div><small>同期基准</small><strong>${fmt(report.benchmarkTotal)}%</strong></div><div><small>最大回撤</small><strong>${fmt(report.maxDrawdown)}%</strong></div></div><div class="chart">${bars}</div><div class="modal-section"><p>绿色：组合月收益绝对值；灰色：基准。该回测不含幸存者偏差、停牌、涨跌停与交易成本处理，不构成收益承诺。</p></div></div>`);
+  showModal(`<div class="modal-content"><span class="card-kicker">RESEARCH SIMULATION</span><h2>12 个月等权回测</h2><p class="lead">每月末等权、未计交易成本。${state.dataMeta.mode === "live" ? "收益序列来自扶摇前复权日 K 按月聚合，基准为沪深 300。" : "当前收益序列为构造数据；接入服务端真实数据后才具有研究意义。"}</p><div class="backtest-stats"><div><small>组合累计</small><strong>${fmt(report.total)}%</strong></div><div><small>同期基准</small><strong>${fmt(report.benchmarkTotal)}%</strong></div><div><small>最大回撤</small><strong>${fmt(report.maxDrawdown)}%</strong></div></div><div class="chart">${bars}</div><div class="modal-section"><p>绿色：组合月收益绝对值；灰色：基准。该回测不含幸存者偏差、停牌、涨跌停与交易成本处理，不构成收益承诺。</p></div></div>`);
 }
 
 function saveStrategy() {
@@ -175,27 +176,58 @@ function openRecord() {
 }
 
 function openData() {
-  const sample = JSON.stringify([{ code: "600036.SH", name: "招商银行", industry: "银行", close: 42.18, revenue_yoy: 9.8, revenue_accel: 4.1, roe: 15.6, pe_ttm: 7.2, pb_mrq: 1.05, volatility_20d: 1.42, drawdown_60d: -7.8, turnover_20d: 18.6, sources: { pe_ttm: { provider: "扶摇", endpoint: "/api/a-share/valuation/snapshot", field: "pe_ttm", unit: "倍", asOf: "2026-10-09 15:00 CST" } } }], null, 2);
-  showModal(`<div class="modal-content"><span class="card-kicker">DATA GATEWAY</span><h2>接入真实数据</h2><p class="lead">推荐从服务端调用扶摇后导入标准化 JSON。API Key 不应写进代码、公开仓库或共享截图。</p><div class="modal-section"><h3>方案 A · 导入完整标准化快照（推荐）</h3><div class="form-row"><div class="form-field"><label>快照时点</label><input id="importAsOf" value="2026-10-09 15:00 CST"></div><div class="form-field"><label>财报口径</label><input id="importPeriod" value="2026Q2 / TTM"></div></div><br><textarea class="import-area" id="importJson" spellcheck="false">${esc(sample)}</textarea><p>必需字段：code、name、industry、revenue_yoy、revenue_accel、roe、pe_ttm、volatility_20d、drawdown_60d。真实缺失必须写 <code>null</code>。</p><div class="modal-actions"><label class="upload-btn">选择 JSON 文件<input id="jsonFile" type="file" accept="application/json,.json" hidden></label><button class="primary-btn" id="importBtn">校验并导入</button></div></div><div class="modal-section"><h3>方案 B · 验证扶摇实时行情连接</h3><p>Key 仅驻留当前页面内存，并直接发送到 <code>fuyao.aicubes.cn</code>。此操作只刷新价格，财务指标仍保持原来源，因此结果会标记为“混合数据”。</p><div class="form-row"><div class="form-field"><label>扶摇 API Key</label><input id="apiKey" type="password" autocomplete="off" placeholder="不会保存"></div><div class="form-field"><label>&nbsp;</label><button class="upload-btn" id="connectBtn">验证并刷新价格</button></div></div><p id="dataError"></p></div></div>`);
+  const sample = JSON.stringify([{ code: "600036.SH", name: "招商银行", industry: "银行", close: 42.18, revenue_yoy: 9.8, revenue_accel: 4.1, roe: 15.6, pe_ttm: 7.2, pb_mrq: 1.05, volatility_20d: 1.42, drawdown_60d: -7.8, turnover_20d: 18.6, sources: { pe_ttm: { provider: "同花顺扶摇", endpoint: "/api/a-share/valuations/snapshot", field: "pe_ttm", unit: "倍", asOf: "2026-10-09T07:00:00.000Z" } } }], null, 2);
+  const statusText = state.serverStatus === "live" ? "服务端已连接，当前页面正在使用真实数据。" : state.serverStatus === "missing-key" ? "服务端已部署，但尚未配置密钥；页面保留明确标识的演示数据。" : state.serverStatus === "unavailable" ? "当前是 GitHub Pages 静态演示版，真实数据请使用服务端版本。" : "正在检查服务端真实数据网关。";
+  showModal(`<div class="modal-content"><span class="card-kicker">SERVER DATA GATEWAY</span><h2>接入真实数据</h2><p class="lead">${esc(statusText)} API Key 仅存在服务端环境变量中，不会传到浏览器、仓库或日志。</p><div class="modal-section"><h3>方案 A · 服务端扶摇网关</h3><p>后端统一获取行情、估值、财务指标、个股历史 K 线和沪深 300 基准，并在服务端计算 20 日波动率、60 日最大回撤与月收益。任一子请求失败时，对应字段保持 <code>null</code> 并返回错误记录，不会用构造值补齐。</p><div class="modal-actions"><button class="primary-btn" id="serverRefresh">重新读取服务端真实数据</button></div><p id="serverMessage"></p></div><div class="modal-section"><h3>方案 B · 导入已授权的标准化快照（备用）</h3><div class="form-row"><div class="form-field"><label>快照时点</label><input id="importAsOf" value="2026-10-09T07:00:00.000Z"></div><div class="form-field"><label>财报口径</label><input id="importPeriod" value="2026-2（对比 2026-1）"></div></div><br><textarea class="import-area" id="importJson" spellcheck="false">${esc(sample)}</textarea><p>必需字段：code、name、industry、revenue_yoy、revenue_accel、roe、pe_ttm、volatility_20d、drawdown_60d。真实缺失必须写 <code>null</code>。</p><div class="modal-actions"><label class="upload-btn">选择 JSON 文件<input id="jsonFile" type="file" accept="application/json,.json" hidden></label><button class="upload-btn" id="importBtn">校验并导入</button></div></div></div>`);
+  $("#serverRefresh").addEventListener("click", async () => {
+    $("#serverRefresh").disabled = true; $("#serverMessage").textContent = "正在从服务端读取…";
+    const result = await loadServerData({ manual: true });
+    if (result.ok) { closeModal(); toast(`已载入 ${state.stocks.length} 只真实数据股票`); }
+    else { $("#serverMessage").textContent = result.message; $("#serverMessage").style.color = "#b14c42"; $("#serverRefresh").disabled = false; }
+  });
   $("#jsonFile").addEventListener("change", async (event) => { const file = event.target.files[0]; if (file) $("#importJson").value = await file.text(); });
   $("#importBtn").addEventListener("click", () => {
     try {
       const rows = validateImportedStocks(JSON.parse($("#importJson").value));
-      state.stocks = rows.map((row) => ({ ...row, returns: row.returns || [], sources: row.sources || {} })); state.dataMeta = { mode: "live", label: "用户导入 · 真实数据", asOf: $("#importAsOf").value.trim(), reportPeriod: $("#importPeriod").value.trim(), note: "已通过字段完整性校验；数据真实性与授权范围由导入方负责。" };
+      state.stocks = rows.map((row) => ({ ...row, returns: row.returns || [], sources: row.sources || {} })); state.benchmarkReturns = []; state.dataMeta = { mode: "live", label: "用户导入 · 已声明真实数据", asOf: $("#importAsOf").value.trim(), reportPeriod: $("#importPeriod").value.trim(), note: "已通过字段完整性校验；数据真实性与授权范围由导入方负责。", universe: `导入样本 ${rows.length} 只` };
       state.compare.clear(); run(); renderCompareBar(); closeModal(); toast(`已导入 ${rows.length} 只股票并重新计算`);
-    } catch (error) { $("#dataError").textContent = `导入失败：${error.message}`; $("#dataError").style.color = "#b14c42"; }
+    } catch (error) { $("#serverMessage").textContent = `导入失败：${error.message}`; $("#serverMessage").style.color = "#b14c42"; }
   });
-  $("#connectBtn").addEventListener("click", async () => {
-    const key = $("#apiKey").value; if (!key) return $("#dataError").textContent = "请输入 API Key";
-    $("#connectBtn").disabled = true; $("#dataError").textContent = "正在连接…";
-    try {
-      const codes = state.stocks.map((s) => s.code).join(","); const response = await fetch(`https://fuyao.aicubes.cn/api/a-share/prices/snapshot?thscodes=${encodeURIComponent(codes)}`, { headers: { "X-api-key": key } });
-      const payload = await response.json(); if (payload.code !== 0) throw new Error(`${payload.message || "业务错误"}（code=${payload.code}，request_id=${payload.request_id || "—"}）`);
-      const quotes = new Map((payload.data?.item || []).map((row) => [row.thscode, row])); state.stocks = state.stocks.map((s) => ({ ...s, close: quotes.get(s.code)?.last_price ?? s.close }));
-      state.dataMeta = { ...state.dataMeta, mode: "mixed", label: "扶摇实时行情 + 既有基本面（混合）", asOf: payload.data?.timestamp ? new Date(payload.data.timestamp).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" }) : state.dataMeta.asOf, note: "价格已刷新，但基本面来源未改变；混合状态不应视为完整真实筛选。" };
-      run(); closeModal(); toast("实时行情连接成功；已明确标记混合数据");
-    } catch (error) { $("#dataError").textContent = `连接失败：${error.message}。未修改现有数据。`; $("#dataError").style.color = "#b14c42"; $("#connectBtn").disabled = false; }
-  });
+}
+
+function applyServerPayload(payload) {
+  const rows = validateImportedStocks(payload.stocks);
+  state.stocks = rows.map((row) => ({ ...row, returns: row.returns || [], sources: row.sources || {} }));
+  state.benchmarkReturns = Array.isArray(payload.benchmarkReturns) ? payload.benchmarkReturns : [];
+  state.dataMeta = payload.meta; state.serverStatus = "live"; state.compare.clear();
+  run(); renderCompareBar();
+}
+
+async function loadServerData({ manual = false } = {}) {
+  try {
+    const response = await fetch("/api/market-data", { headers: { accept: "application/json" } });
+    if (response.status === 404) {
+      state.serverStatus = "unavailable";
+      state.dataMeta.note = "当前是静态演示版，未连接服务端真实数据网关；默认值不代表真实行情。";
+      renderResults();
+      return { ok: false, message: "当前页面没有服务端接口。请使用部署后的服务端版本。" };
+    }
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) {
+      state.serverStatus = payload.code === "SERVER_KEY_MISSING" ? "missing-key" : "error";
+      state.dataMeta.note = `${payload.message || "服务端真实数据不可用"} 未修改现有数据。`;
+      renderResults();
+      return { ok: false, message: `${payload.message || "服务端真实数据不可用"}（${payload.code || response.status}）` };
+    }
+    applyServerPayload(payload);
+    if (!manual) toast("已由服务端载入扶摇真实数据");
+    return { ok: true };
+  } catch (error) {
+    state.serverStatus = "error";
+    state.dataMeta.note = `服务端连接失败：${error.message}。未修改现有数据。`;
+    renderResults();
+    return { ok: false, message: state.dataMeta.note };
+  }
 }
 
 function parseCurrentIntent() {
@@ -220,4 +252,4 @@ document.addEventListener("click", (event) => {
 });
 
 renderConflicts(); renderClarifications(); renderConditions(); run();
-
+loadServerData();

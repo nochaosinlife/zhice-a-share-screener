@@ -3,7 +3,7 @@ export const CONDITION_DEFS = {
   revenue_accel: { label: "营收增速改善", short: "改善", unit: "百分点", op: ">=", default: 3, min: -10, max: 15, step: 0.5, weight: 18, rationale: "本期营收同比减上期营收同比" },
   roe: { label: "加权 ROE", short: "质量", unit: "%", op: ">=", default: 10, min: 0, max: 30, step: 1, weight: 14, rationale: "最近报告期加权净资产收益率" },
   pe_ttm: { label: "PE-TTM", short: "估值", unit: "倍", op: "<=", default: 30, min: 5, max: 100, step: 1, weight: 18, rationale: "最新总市值 / 过去四季度归母净利润" },
-  volatility_20d: { label: "20 日波动率", short: "稳定", unit: "%", op: "<=", default: 2.5, min: 0.5, max: 6, step: 0.1, weight: 17, rationale: "20 日收益率标准差年化；数值越低越稳定" },
+  volatility_20d: { label: "20 日波动率", short: "稳定", unit: "%", op: "<=", default: 2.5, min: 0.5, max: 6, step: 0.1, weight: 17, rationale: "近 20 个交易日日收益率标准差（非年化）；数值越低越稳定" },
   drawdown_60d: { label: "60 日最大回撤下限", short: "回撤", unit: "%", op: ">=", default: -15, min: -40, max: 0, step: 1, weight: 15, rationale: "近 60 日收盘价相对区间高点的最大跌幅" },
 };
 
@@ -47,7 +47,7 @@ export function parseIntent(input = "") {
   if (drawdown !== null) conditions.drawdown_60d.value = -Math.abs(drawdown);
 
   if (/估值合理/.test(text) && peMax === null) ambiguities.push({ key: "pe_ttm", term: "估值合理", interpretation: "PE-TTM ≤ 30 倍", choices: [20, 30, 40] });
-  if (/相对稳定|走势稳定|稳定/.test(text) && vol === null) ambiguities.push({ key: "volatility_20d", term: "走势相对稳定", interpretation: "20 日年化波动率 ≤ 2.5%", choices: [2, 2.5, 3] });
+  if (/相对稳定|走势稳定|稳定/.test(text) && vol === null) ambiguities.push({ key: "volatility_20d", term: "走势相对稳定", interpretation: "20 日日收益率波动率 ≤ 2.5%（非年化）", choices: [2, 2.5, 3] });
   if (/经营改善/.test(text) && accel === null) ambiguities.push({ key: "revenue_accel", term: "经营改善", interpretation: "营收同比较上期提升 ≥ 3 个百分点", choices: [1, 3, 5] });
 
   if ((/高估值/.test(text) && /低估值|估值偏低/.test(text)) || (peMin !== null && peMax !== null && peMin > peMax)) {
@@ -134,4 +134,3 @@ export function assessFreshness(asOf, now = new Date(), maxAgeDays = 7) {
   if (ageDays > maxAgeDays) return { status: "stale", ageDays, message: `数据已过期 ${ageDays} 天` };
   return { status: "fresh", ageDays, message: `数据更新于 ${ageDays} 天内` };
 }
-

@@ -16,7 +16,11 @@ test("合规声明可见", () => {
 
 test("数据异常不会静默回退", () => {
   assert.match(app, /未修改现有数据/);
-  assert.match(app, /混合数据/);
+  assert.match(app, /SERVER_KEY_MISSING/);
   assert.match(app, /缺失/);
 });
 
+test("API Key 不再进入浏览器，前端只访问同源服务端网关", () => {
+  assert.doesNotMatch(app, /X-api-key|id="apiKey"|fuyao\.aicubes\.cn\/api/);
+  assert.match(app, /fetch\("\/api\/market-data"/);
+});
