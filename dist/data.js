@@ -29,15 +29,16 @@ export const STOCKS = raw.map(([code,name,industry,close,revenue_yoy,revenue_acc
   code,name,industry,close,revenue_yoy,revenue_accel,roe,pe_ttm,pb_mrq,volatility_20d,drawdown_60d,turnover_20d,returns,
   sources: {
     close: src("/api/a-share/prices/snapshot", "last_price", "元"),
-    revenue_yoy: src("/api/a-share/financials/indicators", "operating_revenue_growth_ratio", "%", DATA_META.reportPeriod),
+    revenue_yoy: src("/api/a-share/financials/indicators", "operating_income_yoy_growth_ratio", "%", DATA_META.reportPeriod),
     revenue_accel: src("派生计算", "revenue_yoy(t)-revenue_yoy(t-1)", "百分点", DATA_META.reportPeriod),
-    roe: src("/api/a-share/financials/indicators", "weighted_roe", "%", DATA_META.reportPeriod),
+    roe: src("/api/a-share/financials/indicators", "index_weighted_avg_roe", "%", DATA_META.reportPeriod),
     pe_ttm: src("/api/a-share/valuations/snapshot", "pe_ttm", "倍"),
     pb_mrq: src("/api/a-share/valuations/snapshot", "pb_mrq", "倍"),
     volatility_20d: src("派生计算", "std(daily_return,20)，非年化", "%", DATA_META.asOf),
     drawdown_60d: src("派生计算", "min(close/rolling_peak-1,60)", "%", DATA_META.asOf),
-    turnover_20d: src("/api/a-share/prices/history", "avg(turnover,20)", "亿元", DATA_META.asOf),
+    turnover_20d: src("/api/a-share/prices/historical", "avg(turnover,20)", "亿元", DATA_META.asOf),
   },
 }));
 
 export const BENCHMARK_RETURNS = [0.7,-0.4,1.5,1.1,0.6,-0.3,1.2,0.5,-0.8,1.4,0.4,0.9];
+

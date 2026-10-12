@@ -71,7 +71,7 @@ node --check site-dist/server/index.js
 node --test tests/logic.test.mjs tests/static.test.mjs tests/server.test.mjs
 ```
 
-当前自动化测试共 18 项，覆盖主链路、冲突、缺失、回测边界、官方端点编排、派生指标、无密钥状态与客户端密钥隔离。
+当前自动化测试共 19 项，覆盖主链路、冲突、缺失、回测边界、官方端点编排、派生指标、无密钥状态、客户端密钥隔离与溯源字段一致性。
 
 ## 职责边界
 
@@ -101,3 +101,4 @@ tests/                   逻辑、静态安全与服务端测试
 ```
 
 更多记录见 [AI_USAGE.md](./AI_USAGE.md)、[TESTING.md](./TESTING.md)、[AUDIT.md](./AUDIT.md) 和 [SERVER_DEPLOYMENT.md](./SERVER_DEPLOYMENT.md)。
+

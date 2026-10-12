@@ -10,7 +10,7 @@ node scripts/build-worker.mjs
 node --check site-dist/server/index.js
 ```
 
-当前 18 项测试全部通过。
+当前 19 项测试全部通过。
 
 | 类别 | 覆盖场景 | 预期 |
 |---|---|---|
@@ -43,3 +43,4 @@ node --check site-dist/server/index.js
 ## 手工浏览器验收
 
 依次验证解析、阈值修改、冲突阻断、入选/排除、证据抽屉、2–3 股比较、保存/载入、回测、监控原型、数据网关状态和窄屏布局。GitHub Pages 应明确显示静态演示模式；服务端版本有 Key 时应自动切换为真实数据标签。
+
