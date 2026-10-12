@@ -6,9 +6,9 @@
 
 ## 在线产品
 
-- GitHub Pages：`https://nochaosinlife.github.io/zhice-a-share-screener/`
+- GitHub Pages（启用后）：`https://nochaosinlife.github.io/zhice-a-share-screener/`
 - 源码仓库：`https://github.com/nochaosinlife/zhice-a-share-screener`
-- `.github/workflows/pages.yml` 会在 `main` 分支更新后自动部署 `dist/`。
+- `.github/workflows/pages.yml` 会在 `main` 分支更新后自动部署 `dist/`。仓库首次使用时，需要在 **Settings → Pages → Build and deployment** 中把 Source 设为 **GitHub Actions**；Private 仓库是否支持 Pages 取决于账号方案。
 
 ## 本地启动
 
