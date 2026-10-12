@@ -7,7 +7,7 @@ node --test tests/logic.test.mjs tests/static.test.mjs tests/server.test.mjs
 node --check dist/app.js
 node --check server/fuyao.js
 node scripts/build-worker.mjs
-node --check site-dist/server/index.js
+node --check site-dist/dist/server/index.js
 ```
 
 当前 19 项测试全部通过。

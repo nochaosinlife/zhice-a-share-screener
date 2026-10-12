@@ -24,8 +24,9 @@ const worker = (await readFile(resolve(root, "server/worker.js"), "utf8"))
 const bundle = `${fuyao}\n\n${worker}\n\nconst ASSETS = ${JSON.stringify(assets)};\nexport default createWorker(ASSETS);\n`;
 
 await rm(outputRoot, { recursive: true, force: true });
-await mkdir(resolve(outputRoot, "server"), { recursive: true });
+await mkdir(resolve(outputRoot, "dist/server"), { recursive: true });
 await mkdir(resolve(outputRoot, ".openai"), { recursive: true });
-await writeFile(resolve(outputRoot, "server/index.js"), bundle);
+await writeFile(resolve(outputRoot, "dist/server/index.js"), bundle);
 await writeFile(resolve(outputRoot, ".openai/hosting.json"), JSON.stringify({ project_id: "appgprj_6acc8dbce8f081918fe04fd0a76cb8fa" }, null, 2) + "\n");
-console.log(`Built ${files.length} assets into site-dist/server/index.js`);
+console.log(`Built ${files.length} assets into site-dist/dist/server/index.js`);
+

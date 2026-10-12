@@ -62,7 +62,7 @@ python -m http.server 4173 --directory dist
 
 ```powershell
 node scripts/build-worker.mjs
-node --check site-dist/server/index.js
+node --check site-dist/dist/server/index.js
 ```
 
 运行测试（Node.js 18+）：
@@ -95,7 +95,7 @@ node --test tests/logic.test.mjs tests/static.test.mjs tests/server.test.mjs
 dist/                    浏览器应用与明确标识的演示数据
 server/fuyao.js          扶摇服务端编排、标准化和派生指标
 server/worker.js         同源 API、缓存与静态资源服务
-scripts/build-worker.mjs 生成单文件 Worker 部署产物
+scripts/build-worker.mjs 生成单文件 Worker 部署产物（`site-dist/dist/server/index.js`）
 tests/                   逻辑、静态安全与服务端测试
 .openai/hosting.json     Sites Worker 项目标识
 ```

@@ -8,10 +8,10 @@ GitHub Pages 是纯静态托管，无法安全保存扶摇 API Key。真实数�
 
 ```powershell
 node scripts/build-worker.mjs
-node --check site-dist/server/index.js
+node --check site-dist/dist/server/index.js
 ```
 
-构建产物为 `site-dist/server/index.js`，已经内嵌前端静态资源与服务端网关。不要手改生成文件。
+构建产物为 `site-dist/dist/server/index.js`，已经内嵌前端静态资源与服务端网关。不要手改生成文件。
 
 ## 必需密钥
 
@@ -36,3 +36,4 @@ FUYAO_PREVIOUS_REPORT=2026-1
 - `GET /api/market-data`：应返回 `ok:true`、真实股票数组、基准月收益和可追溯元数据。
 - 如果 Key 缺失，接口返回 `503` 和 `SERVER_KEY_MISSING`；这是预期安全行为。
 - 如果扶摇返回业务错误，接口不会用构造数据替换，而是返回错误或把失败子字段保留为 `null`。
+

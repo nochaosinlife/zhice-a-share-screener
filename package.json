@@ -6,6 +6,7 @@
   "scripts": {
     "build:worker": "node scripts/build-worker.mjs",
     "test": "node --test tests/logic.test.mjs tests/static.test.mjs tests/server.test.mjs",
-    "check": "node --check dist/app.js && node --check dist/logic.js && node --check dist/data.js && node --check server/fuyao.js && node --check server/worker.js && npm run build:worker && node --check site-dist/server/index.js"
+    "check": "node --check dist/app.js && node --check dist/logic.js && node --check dist/data.js && node --check server/fuyao.js && node --check server/worker.js && npm run build:worker && node --check site-dist/dist/server/index.js"
   }
 }
+
