@@ -22,7 +22,7 @@
 | 缺失、过期、失败不静默 | 通过 | `null` 保留、严格/宽松策略、新鲜度检查、错误列表 |
 | 条件变化影响 | 通过 | `summarizeImpact()` 返回新增、移除和净变化 |
 | 比较、保存、回测、监控 | 通过（监控为原型） | UI 操作及边界说明 |
-| 可访问 Web URL | 静态版通过；服务端版待配置 | GitHub Pages 可访问；Worker 为真实数据版本 |
+| 可访问 Web URL | 通过；真实数据仍待 Key | GitHub Pages 已公开；Worker 已发布为所有者访问版本 |
 | 源码与 README | 通过 | 公开 GitHub 仓库与完整运行说明 |
 | AI 使用记录 | 通过 | `AI_USAGE.md` |
 | 测试说明 | 通过 | `TESTING.md`，18 项自动化测试 |

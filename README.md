@@ -6,9 +6,11 @@
 
 ## 在线地址
 
-- GitHub Pages 静态演示：`https://nochaosinlife.github.io/zhice-a-share-screener/`
+- 可公开访问的 Web 产品（GitHub Pages）：`https://nochaosinlife.github.io/zhice-a-share-screener/`
 - 源码仓库：`https://github.com/nochaosinlife/zhice-a-share-screener`
-- 服务端版本：发布后见本 README 的部署状态；只有配置合法扶摇 Key 后才会返回真实数据。
+- 服务端版本（当前仅所有者访问）：`https://zhice-a-share-screener.peachy-brook-4413.chatgpt.site`
+
+部署状态：两套 Web 版本均已发布。GitHub Pages 可直接体验全部交互，但明确使用构造演示数据；服务端版本已经具备扶摇真实数据网关，当前尚未配置 `HITHINK_FINANCE_API_KEY`，因此会安全保留演示模式。配置合法 Key 后才会返回真实数据候选。
 
 GitHub Pages 没有安全的服务端密钥环境，因此它只展示明确标识的构造数据。生产版由 Worker 同源提供网页和 `/api/market-data`，Key 仅存于服务端密钥管理。
 

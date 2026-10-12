@@ -1,5 +1,7 @@
 # 服务端部署与密钥配置
 
+已部署地址（当前仅所有者访问）：`https://zhice-a-share-screener.peachy-brook-4413.chatgpt.site`
+
 ## 为什么需要服务端
 
 GitHub Pages 是纯静态托管，无法安全保存扶摇 API Key。真实数据版本必须通过 Worker 运行，由服务端设置 `X-api-key` 请求头，浏览器只访问同源 `/api/market-data`。
